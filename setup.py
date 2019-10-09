@@ -9,7 +9,7 @@ setup(
     author_email='alexper.recovery@gmail.com',
     license='MUNI',
     install_requires=['bioblend', 'json', 'csv', 'time', 'datetime', 'logging',
-    'pandas', 'termcolor', 'Bio'],
+    'pandas', 'termcolor', 'biopython'],
     packages=find_packages(),
     entry_points=dict(
         console_scripts=['gfetchseq=src.main']
