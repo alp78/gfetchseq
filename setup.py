@@ -12,6 +12,6 @@ setup(
     'pandas', 'termcolor', 'Bio'],
     packages=find_packages(),
     entry_points=dict(
-        console_scripts=['rq=src.main']
+        console_scripts=['gfetchseq=src.main']
     )
 )
