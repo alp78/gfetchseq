@@ -111,7 +111,6 @@ def clean_history(hist_id, dataset_id_list):
     logger.info('Removing files from Galaxy...')
 
     for ds in dataset_id_list:
-        dataset_id = ds.id
         gi.histories.delete_dataset(hist_id, ds, purge=True)
     end = time.time()
     purge_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
