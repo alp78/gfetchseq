@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 # gfetchseq [interval_file] [genome] [api_key] [yes/no]
+import bioblend
 from bioblend import galaxy
 from bioblend.galaxy import objects
 from bioblend.galaxy.tools.inputs import inputs
@@ -10,10 +10,19 @@ import time
 import datetime
 import logging
 import pandas as pd
-from sys import argv
-from os import remove, rename
+from sys import argv, exit, stderr
+from os import remove, rename, path
 from termcolor import colored
 from Bio import SeqIO
+
+# setting up logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(message)s')
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 def convert_interval_to_bed(interval_file):
     records_list = []
@@ -25,11 +34,11 @@ def convert_interval_to_bed(interval_file):
     for record in records_list[1:]:
         line = [record[0], record[1], record[2], record[4], 0, record[3]]
         bed_list.append(line)
-    bed_filename = f'{interval_file.rstrip(".interval")}.bed'
+    bed_filename = f'{interval_file.rstrip("interval")}bed'
     with open(bed_filename, 'wt') as f:
         writer = csv.writer(f, delimiter='\t')
         writer.writerows(bed_list)
-    logger.info(f"Converted {colored(interval_file, 'green')} to {colored('bed', 'green')} format")
+    logger.info(f"Converted {colored(interval_file, 'yellow')} to {colored(bed_filename, 'green')}")
     return bed_filename
 
 def upload_bedfile_and_get_dataset(_hist, _file, _type, _genome):
@@ -45,8 +54,14 @@ def upload_bedfile_and_get_dataset(_hist, _file, _type, _genome):
     end = time.time()
     job_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
     logger.info(f"File uploaded in {colored(job_time, 'yellow')}")
-    logger.info(f'Retrieving Dataset...')
-    dataset = gio.histories.list()[0].get_datasets()[-1]
+    logger.info(colored('Retrieving Dataset...' , 'blue'))
+    try:
+        dataset = gio.histories.list()[0].get_datasets()[-1]
+    except Exception as e:
+        logger.info(f'{colored("Problem processing the dataset on Galaxy server", "red")}')
+        logger.info(f'{colored(f"Please retry...", "yellow")}')
+        exit(0)        
+
     return dataset
 
 def fetch_sequences_and_get_dataset_id(dataset):
@@ -83,9 +98,9 @@ def fasta_to_lower(source):
     out_file = f'{source.rstrip(".fasta")}_lower.fasta'
     count = SeqIO.write(records, out_file, "fasta")
     remove(source)
-    logger.info(f'Converted {colored(count, "yellow")} records to lower case')
+    logger.info(f"Converted {colored(count, 'yellow')} records to lower case")
     return out_file
-
+    
 def fasta_format_id(interval_file, fasta_file):
     df = pd.read_csv(interval_file, sep='\t', skiprows=(0), header=(0))
     index = 0
@@ -106,42 +121,98 @@ def fasta_format_id(interval_file, fasta_file):
     remove(fasta_file)
     final_file = f'{fasta_file.rstrip("_lower_fid.fasta")}.fasta'
     rename(out_file, final_file)
-    logger.info('Formatted fasta records IDs')
+    logger.info("Formatted fasta records IDs")
 
 def clean_history(hist_id, dataset_id_list):
     start = time.time()
-    logger.info('Removing files from Galaxy...')
+    logger.info(f'{colored("Removing files from Galaxy...", "blue")}')
 
     for ds in dataset_id_list:
-        gi.histories.delete_dataset(hist_id, dataset_id, purge=True)
+        gi.histories.delete_dataset(hist_id, ds, purge=True)
     end = time.time()
     purge_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
     logger.info(f"Purge completed in {colored(purge_time, 'yellow')}")
 
+# PROGRAM START
+
+# check if arguments are healthy
+in_file = argv[1]
+
+if len(argv) < 4:
+    logger.info(f'{colored("Argument missing", "red")}')
+    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [yes/no]", "green")}')
+    exit(0)
+
+if len(argv) > 5:
+    logger.info(f'{colored("Too many arguments", "red")}')
+    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [yes/no]", "green")}')
+    exit(0)
+
+if in_file[-9:] != '.interval':
+    logger.info(f'{colored("Not a valid gatk_interval file", "red")}')
+    logger.info(f'{colored("example.interval", "green")}')
+    exit(0)
+
+if (len(argv) == 5 and argv[4] != 'yes') and (len(argv) == 5 and argv[4] != 'no'):
+    logger.info(f'{colored("Invalid last argument", "red")}')
+    logger.info(f'Do you want to purge Galaxy history after processing? {colored("yes/no", "green")}')
+    exit(0)
+
+if not path.isfile(in_file):
+    logger.info(f'{colored("Cannot find .interval file in current folder", "red")}')
+    exit(0)
+
+# loading Galaxy genome list
+with open('galaxy_dbkeys.csv', 'rt') as f:
+    reader = csv.reader(f)
+    dbkeys = list(reader)[0]
+
+# check if genome arg is in list
+if argv[2] not in dbkeys:
+    logger.info(f'{colored("Genome invalid", "red")}')
+    logger.info(f'{colored(f"Check dkeys file {dbkeys[:5]}...", "green")}')
+    exit(0)
+
+# check if interval file content is healthy
+
+records_list = []
+with open(in_file, 'rt') as f:
+    content = csv.reader(f, delimiter='\t')
+    index = 0
+    for line in content:
+        records_list.append(line)
+        if index == 3:
+            break
+        index += 1
+if len(records_list[1]) < 5:
+    logger.info(f"{colored('Invalid content in .interval file', 'red')}")
+    logger.info(f'Must have 5 columns: {colored("genName  genStart	genEnd	Strand	repName", "yellow")}')
+    exit(0)
+
+test_line = [records_list[1][0], records_list[1][1], records_list[1][2], records_list[1][4], 0, records_list[1][3]]
+if (len(records_list[1][1]) == 0):
+    logger.info(f"{colored('Coordinates in interval file are invalid', 'red')}")
+    logger.info(f'Example: {colored("chr1 100662981 100669420 - L1PA4", "green")}')
+    exit(0)
 
 full_start = time.time()
 
-# setting up logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(message)s')
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-logger.info('Connecting to Galaxy server...')
+logger.info(f'{colored("Connecting to Galaxy server...", "blue")}')
 
 # initialize both galaxy clients (tools and objects)
-gkey = argv[3]
-gurl = 'https://usegalaxy.org'
-gi = galaxy.GalaxyInstance(gurl, gkey)
-gio = objects.GalaxyInstance(gurl, gkey)
-guser = gi.users.get_current_user()['username']
-hist_id = ''
+try:
+    gkey = argv[3]
+    gurl = 'https://usegalaxy.org'
+    gi = galaxy.GalaxyInstance(gurl, gkey)
+    gio = objects.GalaxyInstance(gurl, gkey)
+    guser = gi.users.get_current_user()['username']
+except bioblend.ConnectionError as bce:
+    logger.info(f'{colored("Cannot connect to Galaxy", "red")}')
+    logger.info(f'{colored(f"{bce.body}...", "yellow")}')
+    exit(0)
 
 logger.info(f"Connected to user account {colored(guser, 'red')}")
 
-in_file = argv[1]
 bed_file = convert_interval_to_bed(in_file)
 
 _hist = gi.histories.get_histories()[0]['id']
@@ -157,7 +228,7 @@ output_id = fetch_sequences_and_get_dataset_id(dataset)
 fasta_file = f'{bed_file.rstrip(".bed")}.fasta'
 download_fasta(output_id, fasta_file)
 
-logger.info('Formatting fasta file...')
+logger.info(colored('Formatting fasta file...', 'blue'))
 
 lower_fasta = fasta_to_lower(fasta_file)
 fasta_format_id(in_file, lower_fasta)
@@ -170,4 +241,3 @@ if argv[4] == 'yes':
 full_end = time.time()
 full_time = f'{str(datetime.timedelta(seconds=int(full_end - full_start)))}'
 logger.info(f"Full process completed in {colored(full_time, 'yellow')}")
-
