@@ -1,4 +1,4 @@
-# gfetchseq [interval_file] [api_key] [yes/no]
+# gfetchseq [interval_file] [genome] [api_key] [yes/no]
 from bioblend import galaxy
 from bioblend.galaxy import objects
 from bioblend.galaxy.tools.inputs import inputs
@@ -106,62 +106,67 @@ def fasta_format_id(interval_file, fasta_file):
     rename(out_file, final_file)
     logger.info('Formatted fasta records IDs')
 
-def clean_history(hist_id):
+def clean_history(hist_id, dataset_id_list):
     start = time.time()
     logger.info('Removing files from Galaxy...')
-    hist_obj = gio.histories.list()[0]
-    for ds in hist_obj.get_datasets():
+
+    for ds in dataset_id_list:
         dataset_id = ds.id
-        gi.histories.delete_dataset(hist_id, dataset_id, purge=True)
+        gi.histories.delete_dataset(hist_id, ds, purge=True)
     end = time.time()
     purge_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
     logger.info(f"Purge completed in {colored(purge_time, 'yellow')}")
 
-if __name__ == '__main__':
-    full_start = time.time()
 
-    # setting up logger
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(message)s')
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    logger.info('Connecting to Galaxy server...')
 
-    # initialize both galaxy clients (tools and objects)
-    gkey = argv[2]
-    gurl = 'https://usegalaxy.org'
-    gi = galaxy.GalaxyInstance(gurl, gkey)
-    gio = objects.GalaxyInstance(gurl, gkey)
-    guser = gi.users.get_current_user()['username']
-    hist_id = ''
+full_start = time.time()
 
-    logger.info(f"Connected to user account {colored(guser, 'red')}")
+# setting up logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(message)s')
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+logger.info('Connecting to Galaxy server...')
 
-    in_file = argv[1]
-    bed_file = convert_interval_to_bed(in_file)
+# initialize both galaxy clients (tools and objects)
+gkey = argv[3]
+gurl = 'https://usegalaxy.org'
+gi = galaxy.GalaxyInstance(gurl, gkey)
+gio = objects.GalaxyInstance(gurl, gkey)
+guser = gi.users.get_current_user()['username']
+hist_id = ''
 
-    _hist = gi.histories.get_histories()[0]['id']
-    _type = 'bed'
-    _genome = 'hg38'
+logger.info(f"Connected to user account {colored(guser, 'red')}")
 
-    dataset = upload_bedfile_and_get_dataset(_hist, bed_file, _type, _genome)
+in_file = argv[1]
+bed_file = convert_interval_to_bed(in_file)
 
-    output_id = fetch_sequences_and_get_dataset_id(dataset)
+_hist = gi.histories.get_histories()[0]['id']
+_type = 'bed'
+_genome = argv[2]
 
-    fasta_file = f'{bed_file.rstrip(".bed")}.fasta'
-    download_fasta(output_id, fasta_file)
+dataset = upload_bedfile_and_get_dataset(_hist, bed_file, _type, _genome)
 
-    logger.info('Formatting fasta file...')
+dataset_id = dataset.id
 
-    lower_fasta = fasta_to_lower(fasta_file)
-    fasta_format_id(in_file, lower_fasta)
+output_id = fetch_sequences_and_get_dataset_id(dataset)
 
-    if argv[3] == 'yes':
-        clean_history(_hist)
+fasta_file = f'{bed_file.rstrip(".bed")}.fasta'
+download_fasta(output_id, fasta_file)
 
-    full_end = time.time()
-    full_time = f'{str(datetime.timedelta(seconds=int(full_end - full_start)))}'
-    logger.info(f"Full process completed in {colored(full_time, 'yellow')}")
+logger.info('Formatting fasta file...')
+
+lower_fasta = fasta_to_lower(fasta_file)
+fasta_format_id(in_file, lower_fasta)
+
+id_list = [dataset_id, output_id]
+
+if argv[4] == 'yes':
+    clean_history(_hist, id_list)
+
+full_end = time.time()
+full_time = f'{str(datetime.timedelta(seconds=int(full_end - full_start)))}'
+logger.info(f"Full process completed in {colored(full_time, 'yellow')}")
