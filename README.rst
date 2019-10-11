@@ -2,8 +2,8 @@ Galaxy Fetch Sequence
 
 gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no] 
 
-input a gatk_interval file (.interval), a valid genome code, your Galaxy API key, 
-a flag to instruct the program to convert DNA alphabet to lowercase or not (yes/no),
+input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38"..), your Galaxy API key, 
+a flag to instruct the program to convert DNA alphabet to lowercase (yes/no),
 and another flag to clean your Galaxy history after completion (yes/no).
 
 The output will be a friendly formatted fasta, with record id [genName_genStart-genEndStrand],
