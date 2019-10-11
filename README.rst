@@ -1,4 +1,4 @@
-**GALAXY FETCH SEQUENCE**
+**GALAXY FETCH SEQUENCES**
 
 *gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
 
