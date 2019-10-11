@@ -10,7 +10,7 @@ The output will be a friendly formatted fasta, with record IDs in the following 
 
 *genName_genStart-genEndStrand*
 
-and adding in each record description the name (if applicable) and/or index of the sequence.
+and with record descriptions with the name (if applicable) and/or index of the sequence.
 
 DNA alphabet converted to lower case if the flag was "yes".
 
