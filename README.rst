@@ -28,7 +28,7 @@ $ ./gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
 
 add source dir to PATH and run from anywhere as:
 
-gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
+$ gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
 
 |
 
