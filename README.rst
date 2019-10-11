@@ -24,8 +24,13 @@ gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
 
 
 Requirements:
+
 python >= 3.6.7
+
 bioblend >= 0.13.0
+
 biopython >= 1.74
+
 pandas >= 0.25.1
+
 termcolor >= 1.1.0
