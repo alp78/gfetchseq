@@ -31,10 +31,32 @@ def convert_interval_to_bed(interval_file):
         for line in content:
             records_list.append(line)
     bed_list = []
-    for record in records_list[1:]:
-        line = [record[0], record[1], record[2], record[4], 0, record[3]]
-        bed_list.append(line)
-    bed_filename = f'{interval_file.rstrip("interval")}bed'
+    # CASE: genName	 genStart	genEnd
+    if len(records_list[1]) == 3:
+        for record in records_list[1:]:
+            line = [record[0], record[1], record[2]]
+            bed_list.append(line)
+    # CASE: genName	 genStart	genEnd  Strand
+    if (len(records_list[1]) == 4) and (records_list[1][3] == '-' or records_list[1][3] == '+'):
+        for record in records_list[1:]:
+            line = [record[0], record[1], record[2], 'n/a', 0, record[3]]
+            bed_list.append(line)
+    # CASE: genName	 genStart	genEnd  repName
+    if (len(records_list[1]) == 4) and (records_list[1][3] != '-' and records_list[1][3] != '+'):
+        for record in records_list[1:]:
+            line = [record[0], record[1], record[2], record[3]]
+            bed_list.append(line)
+    # CASE: genName	 genStart	genEnd  Strand  repName           
+    if (len(records_list[1]) == 5) and (records_list[1][3] == '-' or records_list[1][3] == '+'):
+        for record in records_list[1:]:    
+            line = [record[0], record[1], record[2], record[4], 0, record[3]]
+            bed_list.append(line)
+    # CASE: genName	 genStart	genEnd  repName   Strand      
+    if (len(records_list[1]) == 5) and (records_list[1][4] == '-' or records_list[1][4] == '+'):
+        for record in records_list[1:]:    
+            line = [record[0], record[1], record[2], record[3], 0, record[4]]
+            bed_list.append(line)
+    bed_filename = f'{interval_file[:-9]}.bed'
     with open(bed_filename, 'wt') as f:
         writer = csv.writer(f, delimiter='\t')
         writer.writerows(bed_list)
@@ -56,6 +78,7 @@ def upload_bedfile_and_get_dataset(_hist, _file, _type, _genome):
     logger.info(f"File uploaded in {colored(job_time, 'yellow')}")
     logger.info(colored('Retrieving Dataset...' , 'blue'))
     try:
+        gio = objects.GalaxyInstance(gurl, gkey)
         dataset = gio.histories.list()[0].get_datasets()[-1]
     except Exception as e:
         logger.info(f'{colored("Problem processing the dataset on Galaxy server", "red")}')
@@ -85,41 +108,79 @@ def fetch_sequences_and_get_dataset_id(dataset):
     logger.info(f"Extraction completed in {colored(job_time, 'yellow')}")
     return dataset_id
 
-def download_fasta(dataset_id, path):
+def download_fasta(dataset_id, fasta_file):
     start = time.time()
-    fasta_res = gi.datasets.download_dataset(dataset_id, file_path=path, use_default_filename=False)
+    fasta_res = gi.datasets.download_dataset(dataset_id, file_path=fasta_file, use_default_filename=False)
     logger.info(f"Downloading {colored(fasta_res, 'green')} to current folder...")
     end = time.time()
     dl_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
     logger.info(f"Downloading completed in {colored(dl_time, 'yellow')}")
 
-def fasta_to_lower(source):
-    records = (rec.lower() for rec in SeqIO.parse(source, "fasta"))
-    out_file = f'{source.rstrip(".fasta")}_lower.fasta'
+def fasta_to_lower(fasta_file):
+    records = (rec.lower() for rec in SeqIO.parse(fasta_file, "fasta"))
+    out_file = f'{fasta_file[:-6]}_lower.fasta'
     count = SeqIO.write(records, out_file, "fasta")
-    remove(source)
+    remove(fasta_file)
     logger.info(f"Converted {colored(count, 'yellow')} records to lower case")
     return out_file
     
-def fasta_format_id(interval_file, fasta_file):
-    df = pd.read_csv(interval_file, sep='\t', skiprows=(0), header=(0))
+def fasta_format_id(bed_file, fasta_file):
+    df = pd.read_csv(bed_file, sep='\t', skiprows=(0), header=None)
     index = 0
     records = []
-    for record in SeqIO.parse(fasta_file, "fasta"):
-        g_name = df.loc[index,'genoName']
-        g_start = str(df.loc[index,'genoStart'])
-        g_end = str(df.loc[index,'genoEnd'])
-        g_strand = df.loc[index,'strand']
-        record.id = f"{g_name}_{g_start}-{g_end}{g_strand}"
-        record.name = f"[{index+1}] {df.loc[index,'repName']}"
-        record.description = f"[{index+1}] {df.loc[index,'repName']}"
-        records.append(record)
-        index += 1
-    out_file = f'{fasta_file.rstrip(".fasta")}_fid.fasta'
+
+    # CASE: geName, genStart, genEnd
+    if len(df.columns) == 3:
+        for record in SeqIO.parse(fasta_file, "fasta"):
+            g_name = df.loc[index, 0]
+            g_start = str(df.loc[index, 1])
+            g_end = str(df.loc[index, 2])
+            if '+' in record.id:
+                g_strand = '+'
+            else:
+                g_strand = '-'
+            record.id = f"{g_name}_{g_start}-{g_end}{g_strand}"
+            record.name = f"{[index]}"
+            record.description = f"{[index]}"
+            records.append(record)
+            index += 1
+
+    # CASE: genName	 genStart	genEnd  repName
+    if len(df.columns) == 4:
+        for record in SeqIO.parse(fasta_file, "fasta"):
+            g_name = df.loc[index, 0]
+            g_start = str(df.loc[index, 1])
+            g_end = str(df.loc[index, 2])
+            r_name = df.loc[index, 3]
+            if '+' in record.id:
+                g_strand = '+'
+            else:
+                g_strand = '-'
+            record.id = f"{g_name}_{g_start}-{g_end}{g_strand}"
+            record.name = f"{r_name}"        
+            record.description = f"[{index+1}] {r_name}"
+            records.append(record)
+            index += 1
+
+    # CASE: geName, genStart, genEnd, repName, Score, Strand
+    if len(df.columns) == 6:
+        for record in SeqIO.parse(fasta_file, "fasta"):
+            g_name = df.loc[index, 0]
+            g_start = str(df.loc[index, 1])
+            g_end = str(df.loc[index, 2])
+            r_name = df.loc[index, 3]
+            g_strand = df.loc[index, 5]
+            record.id = f"{g_name}_{g_start}-{g_end}{g_strand}"
+            record.name = f"{r_name}"
+            record.description = f"[{index+1}] {r_name}"
+            records.append(record)
+            index += 1
+
+    out_file = f'{fasta_file[:-6]}_fid.fasta'
     with open(out_file, "w") as output_handle:
         SeqIO.write(records, output_handle, "fasta")
     remove(fasta_file)
-    final_file = f'{fasta_file.rstrip("_lower_fid.fasta")}.fasta'
+    final_file = f'{out_file[:-16]}.fasta'
     rename(out_file, final_file)
     logger.info("Formatted fasta records IDs")
 
@@ -149,7 +210,7 @@ if len(argv) > 5:
     exit(0)
 
 if in_file[-9:] != '.interval':
-    logger.info(f'{colored("Not a valid gatk_interval file", "red")}')
+    logger.info(f'{colored("Not a valid .interval file extension", "red")}')
     logger.info(f'{colored("example.interval", "green")}')
     exit(0)
 
@@ -159,22 +220,21 @@ if (len(argv) == 5 and argv[4] != 'yes') and (len(argv) == 5 and argv[4] != 'no'
     exit(0)
 
 if not path.isfile(in_file):
-    logger.info(f'{colored("Cannot find .interval file in current folder", "red")}')
+    logger.info(f'{colored("Cannot find interval file in current folder", "red")}')
     exit(0)
 
-# loading Galaxy genome list
+# loading list of genomes available in Galaxy
 with open('galaxy_dbkeys.csv', 'rt') as f:
     reader = csv.reader(f)
     dbkeys = list(reader)[0]
 
-# check if genome arg is in list
+# check if genome arg is in the list
 if argv[2] not in dbkeys:
     logger.info(f'{colored("Genome invalid", "red")}')
     logger.info(f'{colored(f"Check dkeys file {dbkeys[:5]}...", "green")}')
     exit(0)
 
 # check if interval file content is healthy
-
 records_list = []
 with open(in_file, 'rt') as f:
     content = csv.reader(f, delimiter='\t')
@@ -184,15 +244,14 @@ with open(in_file, 'rt') as f:
         if index == 3:
             break
         index += 1
-if len(records_list[1]) < 5:
-    logger.info(f"{colored('Invalid content in .interval file', 'red')}")
-    logger.info(f'Must have 5 columns: {colored("genName  genStart	genEnd	Strand	repName", "yellow")}')
+if len(records_list[1]) < 3:
+    logger.info(f"{colored('Invalid content in interval file', 'red')}")
+    logger.info(f'Must have min 3 columns: {colored("genName  genStart  genEnd", "green")}  {colored("Strand  repName", "yellow")}')
     exit(0)
 
-test_line = [records_list[1][0], records_list[1][1], records_list[1][2], records_list[1][4], 0, records_list[1][3]]
-if (len(records_list[1][1]) == 0):
+if (len(records_list[1][1]) == 0 or len(records_list[1][2]) == 0):
     logger.info(f"{colored('Coordinates in interval file are invalid', 'red')}")
-    logger.info(f'Example: {colored("chr1 100662981 100669420 - L1PA4", "green")}')
+    logger.info(f'Example: {colored("chr1 100662981 100669420", "green")} {colored(" - L1PA4", "yellow")}')
     exit(0)
 
 full_start = time.time()
@@ -204,7 +263,6 @@ try:
     gkey = argv[3]
     gurl = 'https://usegalaxy.org'
     gi = galaxy.GalaxyInstance(gurl, gkey)
-    gio = objects.GalaxyInstance(gurl, gkey)
     guser = gi.users.get_current_user()['username']
 except bioblend.ConnectionError as bce:
     logger.info(f'{colored("Cannot connect to Galaxy", "red")}')
@@ -225,13 +283,13 @@ dataset_id = dataset.id
 
 output_id = fetch_sequences_and_get_dataset_id(dataset)
 
-fasta_file = f'{bed_file.rstrip(".bed")}.fasta'
+fasta_file = f'{bed_file[:-4]}.fasta'
 download_fasta(output_id, fasta_file)
 
 logger.info(colored('Formatting fasta file...', 'blue'))
 
 lower_fasta = fasta_to_lower(fasta_file)
-fasta_format_id(in_file, lower_fasta)
+fasta_format_id(bed_file, lower_fasta)
 
 id_list = [dataset_id, output_id]
 
