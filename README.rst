@@ -2,7 +2,7 @@
 
 *gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
 
-input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38"..), your Galaxy API key, 
+input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38", ...), your Galaxy API key, 
 a flag to instruct the program to convert DNA alphabet to lowercase (yes/no),
 and another flag to remove files from Galaxy (yes/no).
 
