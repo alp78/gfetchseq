@@ -12,7 +12,7 @@ The output will be a friendly formatted fasta downloaded to current folder, with
 
 and with record descriptions with the name (if applicable) and/or index of the sequence.
 
-DNA alphabet converted to lower case if the flag was "yes".
+DNA alphabet will be converted to lower case if the flag was "yes".
 
 |
 
