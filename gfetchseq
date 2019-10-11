@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# gfetchseq [interval_file] [genome] [api_key] [yes/no]
+# gfetchseq [interval_file] [genome] [api_key] [yes/no] [yes/no]
 import bioblend
 from bioblend import galaxy
 from bioblend.galaxy import objects
