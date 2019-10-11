@@ -16,9 +16,11 @@ git clone http://github.com/lexxxxxxa/gfetchseq
 run:
 
 1) from source directory:
+
 $ ./gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
 
 2) as command line:
+
 add source dir to PATH and run from anywhere as:
 
 gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
