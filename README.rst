@@ -1,6 +1,6 @@
-Galaxy Fetch Sequence
+**Galaxy Fetch Sequence**
 
-gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no] 
+*gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
 
 input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38"..), your Galaxy API key, 
 a flag to instruct the program to convert DNA alphabet to lowercase (yes/no),
@@ -9,11 +9,11 @@ and another flag to remove files from Galaxy (yes/no).
 The output will be a friendly formatted fasta, with record id [genName_genStart-genEndStrand],
 and DNA alphabet converted to lower case if the flag was "yes".
 
-install:
+**install**:
 
 git clone http://github.com/lexxxxxxa/gfetchseq
 
-run:
+**run**:
 
 1) from source directory:
 
@@ -27,7 +27,7 @@ gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
 
 
 
-Requirements:
+**Requirements**:
 
 python >= 3.6.7
 
