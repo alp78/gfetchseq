@@ -6,11 +6,11 @@ input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38", ...
 a flag to instruct the program to convert DNA alphabet to lowercase (yes/no),
 and another flag to remove files from Galaxy (yes/no).
 
-The output will include a new bed file converted from the interval source file, and a friendly formatted fasta file containing all sequences downloaded to current folder, with record IDs in the following form:
+The output will include a new bed file converted from the interval source file, and a friendly formatted fasta file containing all sequences, downloaded to current folder, with record IDs in the following form:
 
 *genName_genStart-genEndStrand*
 
-and with record descriptions with the name (if applicable) and/or index of the sequence.
+and with record descriptions including the name (if applicable) and/or index of the sequence.
 
 DNA alphabet will be converted to lower case if the flag was "yes".
 
