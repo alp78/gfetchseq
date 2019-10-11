@@ -10,9 +10,11 @@ The output will be a friendly formatted fasta, with record id [genName_genStart-
 and DNA alphabet converted to lower case if the flag was "yes".
 
 install:
+
 git clone http://github.com/lexxxxxxa/gfetchseq
 
 run:
+
 1) from source directory:
 $ ./gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
 
