@@ -27,6 +27,7 @@ gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]
 
 
 
+
 **Requirements**:
 
 python >= 3.6.7
