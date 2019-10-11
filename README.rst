@@ -6,14 +6,17 @@ input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38"..), 
 a flag to instruct the program to convert DNA alphabet to lowercase (yes/no),
 and another flag to remove files from Galaxy (yes/no).
 
-The output will be a friendly formatted fasta, with record id [genName_genStart-genEndStrand],
-and DNA alphabet converted to lower case if the flag was "yes".
+The output will be a friendly formatted fasta, with record id in following form:
 
-**install**:
+*genName_genStart-genEndStrand*
+
+and DNA alphabet converted to lower case if the flag was "yes".
+|
+**INSTALL**:
 
 git clone http://github.com/lexxxxxxa/gfetchseq
 
-**run**:
+**RUN**:
 
 1) from source directory:
 
