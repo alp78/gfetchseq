@@ -26,11 +26,15 @@ $ git clone http://github.com/lexxxxxxa/gfetchseq
 
 $ *./gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
 
-2) as command line:
+2) as command from anywhere:
 
-add source dir to PATH and run from anywhere as:
+first copy executable from source directory to /user/bin:
 
-$ *gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
+$ cp gfetchseq /usr/bin
+
+then command can be used with:
+
+*gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
 
 |
 
