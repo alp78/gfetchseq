@@ -18,7 +18,7 @@ DNA alphabet will be converted to lower case if the flag was "yes".
 
 **INSTALL**:
 
-git clone http://github.com/lexxxxxxa/gfetchseq
+$ git clone http://github.com/lexxxxxxa/gfetchseq
 
 **RUN**:
 
