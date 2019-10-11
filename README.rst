@@ -11,7 +11,9 @@ The output will be a friendly formatted fasta, with record id in following form:
 *genName_genStart-genEndStrand*
 
 and DNA alphabet converted to lower case if the flag was "yes".
+
 |
+
 **INSTALL**:
 
 git clone http://github.com/lexxxxxxa/gfetchseq
