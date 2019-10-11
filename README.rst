@@ -32,7 +32,7 @@ first copy executable from source directory to /usr/bin:
 
 $ cp gfetchseq /usr/bin
 
-then command can be used with:
+then command can be used from anywhere:
 
 *gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
 
