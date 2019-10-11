@@ -28,7 +28,7 @@ $ *./gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
 
 2) as command from anywhere:
 
-first copy executable from source directory to /user/bin:
+first copy executable from source directory to /usr/bin:
 
 $ cp gfetchseq /usr/bin
 
