@@ -3,7 +3,7 @@
 *gfetchseq [interval_file] [genome] [api_key] [upper yes/no] [purge yes/no]*
 
 input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38", ...), your Galaxy API key, 
-a flag to instruct the program to convert DNA alphabet to lowercase (yes/no),
+a flag to instruct the program to convert DNA alphabet to uppercase (yes/no),
 and another flag to remove files from Galaxy (yes/no).
 
 The output will include a new bed file converted from the interval source file, and a friendly formatted fasta file containing all sequences, downloaded to current folder, with record IDs in the following form:
@@ -34,7 +34,7 @@ $ cp gfetchseq /usr/bin
 
 then command can be used from anywhere:
 
-$ *gfetchseq [interval_file] [genome] [api_key] [lower yes/no] [purge yes/no]*
+$ *gfetchseq [interval_file] [genome] [api_key] [upper yes/no] [purge yes/no]*
 
 |
 
