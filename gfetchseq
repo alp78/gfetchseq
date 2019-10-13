@@ -38,27 +38,32 @@ def convert_interval_to_bed(interval_file):
     # CASE: genName	 genStart	genEnd
     if len(records_list[1]) == 3:
         for record in records_list[1:]:
-            line = [record[0], record[1], record[2]]
+            if (len(record)) == 3:
+                line = [record[0], record[1], record[2]]
             bed_list.append(line)
     # CASE: genName	 genStart	genEnd  Strand
     if (len(records_list[1]) == 4) and (records_list[1][3] == '-' or records_list[1][3] == '+'):
         for record in records_list[1:]:
-            line = [record[0], record[1], record[2], 'n/a', 0, record[3]]
+            if (len(record)) == 4:
+                line = [record[0], record[1], record[2], 'n/a', 0, record[3]]
             bed_list.append(line)
     # CASE: genName	 genStart	genEnd  repName
     if (len(records_list[1]) == 4) and (records_list[1][3] != '-' and records_list[1][3] != '+'):
         for record in records_list[1:]:
-            line = [record[0], record[1], record[2], record[3]]
+            if (len(record)) == 4:
+                line = [record[0], record[1], record[2], record[3]]
             bed_list.append(line)
     # CASE: genName	 genStart	genEnd  Strand  repName           
     if (len(records_list[1]) == 5) and (records_list[1][3] == '-' or records_list[1][3] == '+'):
-        for record in records_list[1:]:    
-            line = [record[0], record[1], record[2], record[4], 0, record[3]]
+        for record in records_list[1:]:
+            if (len(record)) == 5: 
+                line = [record[0], record[1], record[2], record[4], 0, record[3]]
             bed_list.append(line)
     # CASE: genName	 genStart	genEnd  repName   Strand      
     if (len(records_list[1]) == 5) and (records_list[1][4] == '-' or records_list[1][4] == '+'):
-        for record in records_list[1:]:    
-            line = [record[0], record[1], record[2], record[3], 0, record[4]]
+        for record in records_list[1:]:
+            if (len(record)) == 5: 
+                line = [record[0], record[1], record[2], record[3], 0, record[4]]
             bed_list.append(line)
     bed_filename = f'{interval_file[:-9]}.bed'
     with open(bed_filename, 'wt') as f:
@@ -120,15 +125,15 @@ def download_fasta(dataset_id, fasta_file):
     dl_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
     logger.info(f"Downloading completed in {colored(dl_time, 'yellow')}")
 
-def fasta_to_lower(fasta_file):
+def fasta_to_upper(fasta_file):
     if argv[4] == 'yes':
-        records = (rec.lower() for rec in SeqIO.parse(fasta_file, "fasta"))
-        logger.info(f"Converted {colored(count, 'yellow')} records to lower case")
-        out_file = f'{fasta_file[:-6]}_lower.fasta'
+        records = (rec.upper() for rec in SeqIO.parse(fasta_file, "fasta"))
+        out_file = f'{fasta_file[:-6]}_upper.fasta'
         count = SeqIO.write(records, out_file, "fasta")
+        logger.info(f"Converted {colored(count, 'yellow')} records to upper case")
         remove(fasta_file)
     else:
-        out_file = f'{fasta_file[:-6]}_lower.fasta'
+        out_file = f'{fasta_file[:-6]}_upper.fasta'
         rename(fasta_file, out_file)
     return out_file
     
@@ -147,7 +152,7 @@ def fasta_format_id(bed_file, fasta_file):
                 g_strand = '+'
             else:
                 g_strand = '-'
-            record.id = f"{g_name}_{g_start}-{g_end}{g_strand}"
+            record.id = f"{g_name}|{g_start}-{g_end}|{g_strand}"
             record.name = f"{[index]}"
             record.description = f"{[index]}"
             records.append(record)
@@ -164,7 +169,7 @@ def fasta_format_id(bed_file, fasta_file):
                 g_strand = '+'
             else:
                 g_strand = '-'
-            record.id = f"{g_name}_{g_start}-{g_end}{g_strand}"
+            record.id = f"{g_name}|{g_start}-{g_end}|{g_strand}"
             record.name = f"{r_name}"        
             record.description = f"[{index+1}] {r_name}"
             records.append(record)
@@ -178,7 +183,7 @@ def fasta_format_id(bed_file, fasta_file):
             g_end = str(df.loc[index, 2])
             r_name = df.loc[index, 3]
             g_strand = df.loc[index, 5]
-            record.id = f"{g_name}_{g_start}-{g_end}{g_strand}"
+            record.id = f"{g_name}|{g_start}-{g_end}|{g_strand}"
             record.name = f"{r_name}"
             record.description = f"[{index+1}] {r_name}"
             records.append(record)
@@ -214,7 +219,7 @@ if len(argv) < 6:
 
 if len(argv) > 6:
     logger.info(f'{colored("Too many arguments", "red")}')
-    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [lower? yes/no] [purge? yes/no]", "green")}')
+    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
     exit(0)
 
 if in_file[-9:] != '.interval':
@@ -224,7 +229,7 @@ if in_file[-9:] != '.interval':
 
 if (len(argv) == 6 and (argv[4] != 'yes') and (len(argv) == 6 and argv[4] != 'no')) or ((len(argv) == 6 and argv[5] != 'yes') and (len(argv) == 6 and argv[5] != 'no')):
     logger.info(f'{colored("Invalid flag argument", "red")}')
-    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [lower? yes/no] [purge? yes/no]", "green")}')
+    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
     exit(0)
 
 if not path.isfile(in_file):
@@ -291,8 +296,8 @@ download_fasta(output_id, fasta_file)
 
 logger.info(colored('Formatting fasta file...', 'blue'))
 
-lower_fasta = fasta_to_lower(fasta_file)
-fasta_format_id(bed_file, lower_fasta)
+upper_fasta = fasta_to_upper(fasta_file)
+fasta_format_id(bed_file, upper_fasta)
 
 id_list = [dataset_id, output_id]
 
