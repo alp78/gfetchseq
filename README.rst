@@ -12,7 +12,7 @@ The output will include a new bed file converted from the interval source file, 
 
 DNA alphabet will be converted to upper case if the flag was "yes".
 
-Condition: the initial .interval must be in one of these formets:
+Condition: the initial .interval must be in one of these formats:
 
 1) genName genStart genEnd
 2) genName genStart genEnd Strand
@@ -30,17 +30,11 @@ $ git clone http://github.com/lexxxxxxa/gfetchseq
 
 A) As command:
 
-A-1) from source directory:
-
-$ *./gfetchseq [interval_file] [genome] [api_key] [upper yes/no] [purge yes/no]*
-
-A-2) as command from anywhere:
-
-first copy executable from source directory to /usr/bin:
+copy executable from command directory to /usr/bin:
 
 $ cp gfetchseq /usr/bin
 
-then command can be used from anywhere:
+then use from anywhere:
 
 $ *gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]*
 
@@ -48,9 +42,9 @@ $ *gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]*
 
 B) As function:
 
-place the *gfetchseq.py* in a folder along with an empty *__init__.py* file
-import the module as *from folder.gfetchseq import gfetchseq*
-then use the function in your script with *gfetchseq(interval_file, genome, api_key, yes/no, yes/no)*
+- place the *gfetchseq.py* from the function directory in a folder along with an empty *__init__.py* file
+- import the module as *from folder.gfetchseq import gfetchseq*
+- then use in script with *gfetchseq(interval_file, genome, api_key, yes/no, yes/no)*
 
 |
 
