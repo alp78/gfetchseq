@@ -6,7 +6,9 @@
 
 **INPUT**
 
-1A) INTERVAL file (.interval) in one of the following formats:
+1) Source file
+ 
+a) INTERVAL file (.interval) in one of the following formats:
 
 genName genStart genEnd
 
@@ -20,7 +22,7 @@ genName genStart genEnd repName Strand
 
 |
 
-1B) BED file (.bed), in this format only: 
+b) BED file (.bed), in this format only: 
 
 genName genStart genEnd repName Score Strand
 
