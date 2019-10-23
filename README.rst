@@ -63,7 +63,7 @@ $ cp gfetchseq /usr/bin
 
 use from anywhere:
 
-$ *gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]*
+$ *gfetchseq [interval/bed] [genome] [api_key] [upper? yes/no] [purge? yes/no]*
 
 |
 
