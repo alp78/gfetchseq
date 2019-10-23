@@ -9,14 +9,22 @@
 1A) INTERVAL file (.interval) in one of the following formats:
 
 genName genStart genEnd
+
 genName genStart genEnd Strand
+
 genName genStart genEnd repName
+
 genName genStart genEnd Strand repName
+
 genName genStart genEnd repName Strand
+
+|
 
 1B) BED file (.bed), in this format only: 
 
 genName genStart genEnd repName Score Strand
+
+|
 
 2) a valid genome code ("hg19", "hg38", ...)
 
