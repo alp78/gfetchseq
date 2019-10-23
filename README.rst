@@ -8,7 +8,7 @@
 
 1) Source file
  
-a) INTERVAL file (.interval) in one of the following formats:
+1a) INTERVAL file (.interval) in one of the following formats:
 
 genName genStart genEnd
 
@@ -22,7 +22,7 @@ genName genStart genEnd repName Strand
 
 |
 
-b) BED file (.bed), in this format only: 
+1b) BED file (.bed), in this format only: 
 
 genName genStart genEnd repName Score Strand
 
