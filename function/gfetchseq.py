@@ -222,7 +222,7 @@ def gfetchseq(interval, genome, gkey, up, clean):
         exit(0) 
 
     if not path.isfile(interval):
-        logger.info(f'{colored("Cannot find interval file in current folder", "red")}')
+        logger.info(f'{colored("Cannot find interval/bed file in current folder", "red")}')
         exit(0)
 
     # check if genome arg is in the list

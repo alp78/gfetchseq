@@ -1,24 +1,36 @@
 **GALAXY FETCH SEQUENCES**
 
-*gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge Galaxy? yes/no]*
+*gfetchseq [interval/bed file] [genome] [api_key] [upper? yes/no] [purge Galaxy? yes/no]*
 
-input a gatk_interval file (.interval), a valid genome code ("hg19", "hg38", ...), your Galaxy API key, 
-a flag to instruct the program to convert DNA alphabet to uppercase (yes/no),
-and another flag to remove files from Galaxy (yes/no).
+|
 
-The output will include a new bed file converted from the interval source file, and a formatted fasta file containing all sequences, downloaded to current folder, with record IDs in the following format:
-
-*genName_genStart-genEnd_repNameStrand*
-
-DNA alphabet will be converted to upper case if the flag was "yes".
-
-Condition: the initial .interval must be in one of these formats:
+**INPUT**
+1a) gatk_interval file (.interval) in one of the following format:
 
 1) genName genStart genEnd
 2) genName genStart genEnd Strand
 3) genName genStart genEnd repName
 4) genName genStart genEnd Strand repName
 5) genName genStart genEnd repName Strand
+
+1b) bed file (.bed), in this formt only: 
+
+2) a valid genome code ("hg19", "hg38", ...)
+
+3) your Galaxy API key
+
+4) a flag to instruct the program to convert DNA alphabet to uppercase (yes/no)
+
+5) another flag to remove files from Galaxy (yes/no).
+
+**OUTPUT**
+
+The output will include a new bed file converted if the input file was interval, and a formatted fasta file containing all sequences, downloaded to current folder, with record IDs in the following format:
+
+*genName_genStart-genEnd_repNameStrand*
+
+DNA alphabet will be converted to upper case if the flag was "yes".
+
 
 |
 
@@ -34,7 +46,7 @@ copy executable from command directory to /usr/bin:
 
 $ cp gfetchseq /usr/bin
 
-then use from anywhere:
+use from anywhere:
 
 $ *gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]*
 
@@ -42,9 +54,9 @@ $ *gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]*
 
 B) As function:
 
-- place the *gfetchseq.py* from the function directory in a folder along with an empty *__init__.py* file
+- create a folder at the root of your project, move the *gfetchseq.py* from the function directory, along with an empty *__init__.py* file
 - import the module as *from folder.gfetchseq import gfetchseq*
-- then use in script with *gfetchseq(interval_file, genome, api_key, yes/no, yes/no)*
+- then use in script with *gfetchseq(interval/bed, genome, api_key, yes/no, yes/no)*
 
 |
 
