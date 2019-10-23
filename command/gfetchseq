@@ -10,7 +10,7 @@ import time
 import datetime
 import logging
 import pandas as pd
-from sys import argv, exit, stderr
+from sys import exit, stderr
 from os import remove, rename, path
 from termcolor import colored
 from Bio import SeqIO
@@ -215,26 +215,25 @@ in_file = argv[1]
 
 if len(argv) < 6:
     logger.info(f'{colored("Argument missing", "red")}')
-    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [yes/no] [yes/no]", "green")}')
+    logger.info(f'{colored("gfetchseq [interval/bed] [genome] [api_key] [yes/no] [yes/no]", "green")}')
     exit(0)
 
 if len(argv) > 6:
     logger.info(f'{colored("Too many arguments", "red")}')
-    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
+    logger.info(f'{colored("gfetchseq [interval/bed] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
     exit(0)
 
-if in_file[-9:] != '.interval':
-    logger.info(f'{colored("Not a valid .interval file extension", "red")}')
-    logger.info(f'{colored("example.interval", "green")}')
+if in_file[-9:] != '.interval' and in_file[-4:] != '.bed':
+    logger.info(f'{colored("Not a valid .interval/.bed file extension", "red")}')
     exit(0)
 
 if (len(argv) == 6 and (argv[4] != 'yes') and (len(argv) == 6 and argv[4] != 'no')) or ((len(argv) == 6 and argv[5] != 'yes') and (len(argv) == 6 and argv[5] != 'no')):
     logger.info(f'{colored("Invalid flag argument", "red")}')
-    logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
+    logger.info(f'{colored("gfetchseq [interval/bed] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
     exit(0)
 
 if not path.isfile(in_file):
-    logger.info(f'{colored("Cannot find interval file in current folder", "red")}')
+    logger.info(f'{colored("Cannot find interval/bed file in current folder", "red")}')
     exit(0)
 
 # check if genome arg is in the list
@@ -244,24 +243,47 @@ if argv[2] not in dbkeys:
     exit(0)
 
 # check if interval file content is healthy
-records_list = []
-with open(in_file, 'rt') as f:
-    content = csv.reader(f, delimiter='\t')
-    index = 0
-    for line in content:
-        records_list.append(line)
-        if index == 3:
-            break
-        index += 1
-if len(records_list[1]) < 3:
-    logger.info(f"{colored('Invalid content in interval file', 'red')}")
-    logger.info(f'Must have min 3 columns: {colored("genName  genStart  genEnd", "green")}  {colored("Strand  repName", "yellow")}')
-    exit(0)
+if in_file[-9:] == '.interval':
+    # check if interval file content is healthy
+    records_list = []
+    with open(in_file, 'rt') as f:
+        content = csv.reader(f, delimiter='\t')
+        index = 0
+        for line in content:
+            records_list.append(line)
+            if index == 3:
+                break
+            index += 1
+    if len(records_list[1]) < 3:
+        logger.info(f"{colored('Invalid content in interval file', 'red')}")
+        logger.info(f'Must have min 3 columns: {colored("genName  genStart  genEnd", "green")}  {colored("Strand  repName", "yellow")}')
+        exit(0)
 
-if (len(records_list[1][1]) == 0 or len(records_list[1][2]) == 0):
-    logger.info(f"{colored('Coordinates in interval file are invalid', 'red')}")
-    logger.info(f'Example: {colored("chr1 100662981 100669420", "green")} {colored(" - L1PA4", "yellow")}')
-    exit(0)
+    if (len(records_list[1][1]) == 0 or len(records_list[1][2]) == 0):
+        logger.info(f"{colored('Coordinates in interval file are invalid', 'red')}")
+        logger.info(f'Example: {colored("chr1 100662981 100669420", "green")} {colored(" - L1PA4", "yellow")}')
+        exit(0)
+
+if in_file[-4:] == '.bed':
+    # check if bed file content is healthy
+    records_list = []
+    with open(in_file, 'rt') as f:
+        content = csv.reader(f, delimiter='\t')
+        index = 0
+        for line in content:
+            records_list.append(line)
+            if index == 3:
+                break
+            index += 1
+    if len(records_list[1]) < 6:
+        logger.info(f"{colored('Invalid content in bed file', 'red')}")
+        logger.info(f'Must have 6 columns: {colored("genName  genStart  genEnd  repName  Score  Strand", "green")}')
+        exit(0)
+
+    if (len(records_list[1][1]) == 0 or len(records_list[1][2]) == 0):
+        logger.info(f"{colored('Coordinates in bed file are invalid', 'red')}")
+        logger.info(f'Example: {colored("chr1 100662981 100669420 L1PA4 0 +", "green")}')
+        exit(0) 
 
 full_start = time.time()
 
@@ -280,7 +302,10 @@ except bioblend.ConnectionError as bce:
 
 logger.info(f"Connected to user account {colored(guser, 'red')}")
 
-bed_file = convert_interval_to_bed(in_file)
+if in_file[-9:] == '.interval':
+    bed_file = convert_interval_to_bed(in_file)
+else:
+    bed_file = in_file
 
 _hist = gi.histories.get_histories()[0]['id']
 _type = 'bed'

@@ -59,11 +59,11 @@ def convert_interval_to_bed(interval_file, logger):
     with open(bed_filename, 'wt') as f:
         writer = csv.writer(f, delimiter='\t')
         writer.writerows(bed_list)
-    logger.info(f"Converted {colored(interval_file, 'yellow')} to {colored(bed_filename, 'green')}")
+    logger.info(f"Converted {colored(interval_file, 'blue')} to {colored(bed_filename, 'blue')}")
     return bed_filename
 
 def upload_bedfile_and_get_dataset(_hist, _file, _type, _genome, gi, gurl, gkey, logger):
-    logger.info(f"Uploading {colored(_file, 'green')} to Galaxy...")
+    logger.info(f"Uploading {colored(_file, 'blue')} to Galaxy...")
     start = time.time()
     job = gi.tools.upload_file(_file, _hist, file_type=_type, dbkey=_genome, space_to_tab=True)
     job_id = job['jobs'][0]['id']
@@ -74,7 +74,7 @@ def upload_bedfile_and_get_dataset(_hist, _file, _type, _genome, gi, gurl, gkey,
         time.sleep(30)
     end = time.time()
     job_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
-    logger.info(f"File uploaded in {colored(job_time, 'yellow')}")
+    logger.info(f"File uploaded in {colored(job_time, 'blue')}")
     logger.info(colored('Retrieving Dataset...' , 'blue'))
     try:
         gio = objects.GalaxyInstance(gurl, gkey)
@@ -88,7 +88,7 @@ def upload_bedfile_and_get_dataset(_hist, _file, _type, _genome, gi, gurl, gkey,
 
 def fetch_sequences_and_get_dataset_id(dataset, gi, logger):
     start = time.time()
-    logger.info(f"Fetching DNA sequences from {colored(dataset.genome_build, 'green')} in {colored('fasta', 'green')} format...")
+    logger.info(f"Fetching DNA sequences from {colored(dataset.genome_build, 'blue')} in {colored('fasta', 'blue')} format...")
     dataset_name = dataset.name
     dataset_id = dataset.id
     hist_id = dataset.container_id
@@ -104,23 +104,23 @@ def fetch_sequences_and_get_dataset_id(dataset, gi, logger):
         time.sleep(30)
     end = time.time()
     job_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
-    logger.info(f"Extraction completed in {colored(job_time, 'yellow')}")
+    logger.info(f"Extraction completed in {colored(job_time, 'blue')}")
     return dataset_id
 
 def download_fasta(dataset_id, fasta_file, gi, logger):
     start = time.time()
     fasta_res = gi.datasets.download_dataset(dataset_id, file_path=fasta_file, use_default_filename=False)
-    logger.info(f"Downloading {colored(fasta_res, 'green')} to current folder...")
+    logger.info(f"Downloading {colored(fasta_res, 'blue')} to current folder...")
     end = time.time()
     dl_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
-    logger.info(f"Downloading completed in {colored(dl_time, 'yellow')}")
+    logger.info(f"Downloading completed in {colored(dl_time, 'blue')}")
 
 def fasta_to_upper(fasta_file, logger, up):
     if up == 'yes':
         records = (rec.upper() for rec in SeqIO.parse(fasta_file, "fasta"))
         out_file = f'{fasta_file[:-6]}_upper.fasta'
         count = SeqIO.write(records, out_file, "fasta")
-        logger.info(f"Converted {colored(count, 'yellow')} records to upper case")
+        logger.info(f"Converted {colored(count, 'blue')} records to upper case")
         remove(fasta_file)
     else:
         out_file = f'{fasta_file[:-6]}_upper.fasta'
@@ -195,7 +195,7 @@ def clean_history(hist_id, dataset_id_list, gi, logger):
         gi.histories.delete_dataset(hist_id, ds, purge=True)
     end = time.time()
     purge_time = f'{str(datetime.timedelta(seconds=int(end - start)))}'
-    logger.info(f"Purge completed in {colored(purge_time, 'yellow')}")
+    logger.info(f"Purge completed in {colored(purge_time, 'blue')}")
 
 # PROGRAM START
 def gfetchseq(interval, genome, gkey, up, clean):
@@ -207,19 +207,18 @@ def gfetchseq(interval, genome, gkey, up, clean):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    if interval[-9:] != '.interval':
-        logger.info(f'{colored("Not a valid .interval file extension", "red")}')
-        logger.info(f'{colored("example.interval", "green")}')
+    if interval[-9:] != '.interval' and interval[-4:] != '.bed':
+        logger.info(f'{colored("Not a valid .bed or .interval file extension", "red")}')
         exit(0)
 
     if (up != 'yes' and up != 'no'):
         logger.info(f'{colored("Invalid flag argument", "red")}')
-        logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
+        logger.info(f'{colored("gfetchseq [interval/bed] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
         exit(0)
 
     if (clean != 'yes' and clean != 'no'):
         logger.info(f'{colored("Invalid flag argument", "red")}')
-        logger.info(f'{colored("gfetchseq [interval_file] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
+        logger.info(f'{colored("gfetchseq [interval/bed] [genome] [api_key] [upper? yes/no] [purge? yes/no]", "green")}')
         exit(0) 
 
     if not path.isfile(interval):
@@ -232,25 +231,47 @@ def gfetchseq(interval, genome, gkey, up, clean):
         logger.info(f'{colored(f"Allowed dkbeys {dbkeys}...", "green")}')
         exit(0)
 
-    # check if interval file content is healthy
-    records_list = []
-    with open(interval, 'rt') as f:
-        content = csv.reader(f, delimiter='\t')
-        index = 0
-        for line in content:
-            records_list.append(line)
-            if index == 3:
-                break
-            index += 1
-    if len(records_list[1]) < 3:
-        logger.info(f"{colored('Invalid content in interval file', 'red')}")
-        logger.info(f'Must have min 3 columns: {colored("genName  genStart  genEnd", "green")}  {colored("Strand  repName", "yellow")}')
-        exit(0)
+    if interval[-9:] == '.interval':
+        # check if interval file content is healthy
+        records_list = []
+        with open(interval, 'rt') as f:
+            content = csv.reader(f, delimiter='\t')
+            index = 0
+            for line in content:
+                records_list.append(line)
+                if index == 3:
+                    break
+                index += 1
+        if len(records_list[1]) < 3:
+            logger.info(f"{colored('Invalid content in interval file', 'red')}")
+            logger.info(f'Must have min 3 columns: {colored("genName  genStart  genEnd", "green")}  {colored("Strand  repName", "yellow")}')
+            exit(0)
 
-    if (len(records_list[1][1]) == 0 or len(records_list[1][2]) == 0):
-        logger.info(f"{colored('Coordinates in interval file are invalid', 'red')}")
-        logger.info(f'Example: {colored("chr1 100662981 100669420", "green")} {colored(" - L1PA4", "yellow")}')
-        exit(0)
+        if (len(records_list[1][1]) == 0 or len(records_list[1][2]) == 0):
+            logger.info(f"{colored('Coordinates in interval file are invalid', 'red')}")
+            logger.info(f'Example: {colored("chr1 100662981 100669420", "green")} {colored(" - L1PA4", "yellow")}')
+            exit(0)
+    
+    if interval[-4:] == '.bed':
+        # check if interval file content is healthy
+        records_list = []
+        with open(interval, 'rt') as f:
+            content = csv.reader(f, delimiter='\t')
+            index = 0
+            for line in content:
+                records_list.append(line)
+                if index == 3:
+                    break
+                index += 1
+        if len(records_list[1]) < 6:
+            logger.info(f"{colored('Invalid content in bed file', 'red')}")
+            logger.info(f'Must have 6 columns: {colored("genName  genStart  genEnd  repName  Score  Strand", "green")}')
+            exit(0)
+
+        if (len(records_list[1][1]) == 0 or len(records_list[1][2]) == 0):
+            logger.info(f"{colored('Coordinates in bed file are invalid', 'red')}")
+            logger.info(f'Example: {colored("chr1 100662981 100669420 L1PA4 0 +", "green")}')
+            exit(0)  
 
     full_start = time.time()
 
@@ -263,12 +284,14 @@ def gfetchseq(interval, genome, gkey, up, clean):
         guser = gi.users.get_current_user()['username']
     except bioblend.ConnectionError as bce:
         logger.info(f'{colored("Cannot connect to Galaxy", "red")}')
-        logger.info(f'{colored(f"{bce.body}...", "yellow")}')
+        logger.info(f'{colored(f"{bce.body}...", "blue")}')
         exit(0)
 
-    logger.info(f"Connected to user account {colored(guser, 'red')}")
-
-    bed_file = convert_interval_to_bed(interval, logger)
+    logger.info(f"Connected to user account {colored(guser, 'blue')}")
+    if interval[-9:] == '.interval':
+        bed_file = convert_interval_to_bed(interval, logger)
+    else:
+        bed_file = interval
 
     _hist = gi.histories.get_histories()[0]['id']
     _type = 'bed'
@@ -296,7 +319,7 @@ def gfetchseq(interval, genome, gkey, up, clean):
 
     full_end = time.time()
     full_time = f'{str(datetime.timedelta(seconds=int(full_end - full_start)))}'
-    logger.info(f"Full process completed in {colored(full_time, 'yellow')}")
+    logger.info(f"Full process completed in {colored(full_time, 'blue')}")
     del formatter
     del ch
     del logger
