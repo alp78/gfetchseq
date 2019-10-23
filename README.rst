@@ -5,15 +5,18 @@
 |
 
 **INPUT**
-1a) gatk_interval file (.interval) in one of the following format:
 
-1) genName genStart genEnd
-2) genName genStart genEnd Strand
-3) genName genStart genEnd repName
-4) genName genStart genEnd Strand repName
-5) genName genStart genEnd repName Strand
+1A) INTERVAL file (.interval) in one of the following formats:
 
-1b) bed file (.bed), in this formt only: 
+genName genStart genEnd
+genName genStart genEnd Strand
+genName genStart genEnd repName
+genName genStart genEnd Strand repName
+genName genStart genEnd repName Strand
+
+1B) BED file (.bed), in this format only: 
+
+genName genStart genEnd repName Score Strand
 
 2) a valid genome code ("hg19", "hg38", ...)
 
@@ -22,6 +25,8 @@
 4) a flag to instruct the program to convert DNA alphabet to uppercase (yes/no)
 
 5) another flag to remove files from Galaxy (yes/no).
+
+|
 
 **OUTPUT**
 
