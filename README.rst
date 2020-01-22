@@ -51,7 +51,7 @@ DNA alphabet will be converted to upper case if the flag was "yes".
 
 **INSTALL**:
 
-$ git clone http://github.com/lexxxxxxa/gfetchseq
+$ git clone http://github.com/alp78/gfetchseq
 
 **RUN**:
 
