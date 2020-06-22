@@ -1,4 +1,4 @@
-**GALAXY FETCH SEQUENCES**
+**GALAXY FETCH REPEAT SEQUENCES**
 
 *gfetchseq [interval/bed file] [genome] [api_key] [upper? yes/no] [purge Galaxy? yes/no]*
 
@@ -10,21 +10,21 @@
  
 1a) INTERVAL file (.interval) in one of the following formats:
 
-genName genStart genEnd
+repName repStart repEnd
 
-genName genStart genEnd Strand
+repName repStart repEnd Strand
 
-genName genStart genEnd repName
+repName repStart repEnd repName
 
-genName genStart genEnd Strand repName
+repName repStart repEnd Strand repName
 
-genName genStart genEnd repName Strand
+repName repStart repEnd repName Strand
 
 |
 
 1b) BED file (.bed), in this format only: 
 
-genName genStart genEnd repName Score Strand
+repName repStart repEnd repName Score Strand
 
 |
 
@@ -42,7 +42,7 @@ genName genStart genEnd repName Score Strand
 
 The output will include a new bed file converted if the input file was interval, and a formatted fasta file containing all sequences, downloaded to current folder, with record IDs in the following format:
 
-*genName_genStart-genEnd_repNameStrand*
+*repName_repStart-repEnd_repNameStrand*
 
 DNA alphabet will be converted to upper case if the flag was "yes".
 
